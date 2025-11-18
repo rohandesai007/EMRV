@@ -370,6 +370,20 @@ Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md)
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+## 👥 Authors & Contributors
+
+**Rohan Desai**  
+Dallas, Texas, USA  
+Email: rohan.acme@gmail.com  
+GitHub: https://github.com/rohan-desai  
+LinkedIn: https://www.linkedin.com/in/rohandesai07/
+
+**Vaishnavi Gadve**  
+Irving, Texas, USA  
+Email: vaishnavigadve143@gmail.com  
+GitHub: https://github.com/vaish2412  
+LinkedIn: https://www.linkedin.com/in/vaishnavi-gadve-4b577512a/
+
 ## 🙏 Acknowledgments
 
 - Created by [Healthcare Analytics Hub](https://github.com/yourusername)
@@ -380,7 +394,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **Issues**: [GitHub Issues](https://github.com/yourusername/emrvalidator/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/yourusername/emrvalidator/discussions)
-- **Email**: your-email@example.com
+- **Email**: rohan.acme@gmail.com
 
 ## 🌟 Star History
 
@@ -403,7 +417,7 @@ If you use EMRValidator in your research or project, please cite:
 ```bibtex
 @software{emrvalidator2024,
   title = {EMRValidator: Healthcare-Focused Data Quality and Validation},
-  author = {Healthcare Analytics Hub},
+  author = {Desai, Rohan and Gadve, Vaishnavi},
   year = {2024},
   url = {https://github.com/yourusername/emrvalidator}
 }

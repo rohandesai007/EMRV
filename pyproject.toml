@@ -9,11 +9,11 @@ description = "A modern, healthcare-focused data quality and validation library 
 readme = "README.md"
 authors = [
     {name = "Rohan Desai", email = "rohan.acme@gmail.com"},
-    {name = "Vaishnavi Sanjay Gadve", email = "vaishnavigadve143@gmail.com"}
+    {name = "Vaishnavi Gadve", email = "vaishnavigadve143@gmail.com"}
 ]
 maintainers = [
-   {name = "Rohan Desai", email = "rohan.acme@gmail.com"},
-    {name = "Vaishnavi Sanjay Gadve", email = "vaishnavigadve143@gmail.com"}
+    {name = "Rohan Desai", email = "rohan.acme@gmail.com"},
+    {name = "Vaishnavi Gadve", email = "vaishnavigadve143@gmail.com"}
 ]
 license = {text = "MIT"}
 classifiers = [

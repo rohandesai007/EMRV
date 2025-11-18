@@ -1,5 +1,7 @@
 """
 Core DataValidator class for EMR data validation
+
+Authors: Rohan Desai, Vaishnavi Gadve
 """
 
 import pandas as pd
