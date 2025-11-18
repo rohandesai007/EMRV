@@ -366,7 +366,7 @@ Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md)
 7. Push to the branch (`git push origin feature/AmazingFeature`)
 8. Open a Pull Request
 
-## 📜 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
@@ -384,7 +384,7 @@ Email: vaishnavigadve143@gmail.com
 GitHub: https://github.com/vaish2412  
 LinkedIn: https://www.linkedin.com/in/vaishnavi-gadve-4b577512a/
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - Created by [Healthcare Analytics Hub](https://github.com/rohandesai007/EMRV)
 - Inspired by the need for simpler, healthcare-focused data validation
@@ -396,7 +396,7 @@ LinkedIn: https://www.linkedin.com/in/vaishnavi-gadve-4b577512a/
 - **Discussions**: [GitHub Discussions](https://github.com/rohandesai007/EMRV/discussions)
 - **Email**: rohan.acme@gmail.com
 
-## 🌟 Star History
+## Star History
 
 If you find EMRValidator useful, please consider giving it a star on GitHub!
 
@@ -424,7 +424,5 @@ If you use EMRValidator in your research or project, please cite:
 ```
 
 ---
-
-**Made with ❤️ for Healthcare Data Professionals**
 
 [⬆ Back to Top](#emrvalidator)
