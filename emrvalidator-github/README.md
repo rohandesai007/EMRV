@@ -306,8 +306,8 @@ tests/
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/emrvalidator.git
-cd emrvalidator
+git clone https://github.com/rohandesai007/EMRV.git
+cd EMRV
 
 # Create virtual environment
 python -m venv venv
@@ -370,17 +370,33 @@ Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md)
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+## 👥 Authors & Contributors
+
+**Rohan Desai & Vaishnavi Sanjay Gadve**
+
+### Rohan Desai
+Dallas, Texas, USA  
+Email: [rohan.acme@gmail.com](mailto:rohan.acme@gmail.com)  
+GitHub: [https://github.com/rohandesai007](https://github.com/rohandesai007)  
+LinkedIn: [https://www.linkedin.com/in/rohandesai07/](https://www.linkedin.com/in/rohandesai07/)
+
+### Vaishnavi Sanjay Gadve
+Irving, Texas, USA  
+Email: [vaishnavigadve143@gmail.com](mailto:vaishnavigadve143@gmail.com)  
+GitHub: [https://github.com/vaish2412](https://github.com/vaish2412)  
+LinkedIn: [https://www.linkedin.com/in/vaishnavi-gadve-4b577512a/](https://www.linkedin.com/in/vaishnavi-gadve-4b577512a/)
+
 ## Acknowledgments
 
-- Created by [Healthcare Analytics Hub](https://github.com/yourusername)
+- Created by [Healthcare Analytics Hub](https://github.com/rohandesai007/EMRV)
 - Inspired by the need for simpler, healthcare-focused data validation
 - Built for the healthcare analytics community
 
-## ontact & Support
+## 📧 Contact & Support
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/emrvalidator/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/emrvalidator/discussions)
-- **Email**: your-email@example.com
+- **Issues**: [GitHub Issues](https://github.com/rohandesai007/EMRV/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/rohandesai007/EMRV/discussions)
+- **Email**: rohan.acme@gmail.com
 
 ## 🌟 Star History
 
@@ -403,14 +419,14 @@ If you use EMRValidator in your research or project, please cite:
 ```bibtex
 @software{emrvalidator2024,
   title = {EMRValidator: Healthcare-Focused Data Quality and Validation},
-  author = {Healthcare Analytics Hub},
+  author = {Desai, Rohan and Gadve, Vaishnavi Sanjay},
   year = {2024},
-  url = {https://github.com/yourusername/emrvalidator}
+  url = {https://github.com/rohandesai007/EMRV}
 }
 ```
 
 ---
 
-**Made for Healthcare Data Professionals**
+**Made for Healthcare Data Professionals by Rohan Desai & Vaishnavi Sanjay Gadve**
 
 [⬆ Back to Top](#emrvalidator)

@@ -8,10 +8,12 @@ version = "1.0.0"
 description = "A modern, healthcare-focused data quality and validation library - cleaner and faster than Great Expectations"
 readme = "README.md"
 authors = [
-    {name = "Healthcare Analytics Hub", email = "your-email@example.com"}
+    {name = "Rohan Desai", email = "rohan.acme@gmail.com"},
+    {name = "Vaishnavi Sanjay Gadve", email = "vaishnavigadve143@gmail.com"}
 ]
 maintainers = [
-    {name = "Healthcare Analytics Hub", email = "your-email@example.com"}
+    {name = "Rohan Desai", email = "rohan.acme@gmail.com"},
+    {name = "Vaishnavi Sanjay Gadve", email = "vaishnavigadve143@gmail.com"}
 ]
 license = {text = "MIT"}
 classifiers = [
@@ -67,11 +69,11 @@ docs = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/emrvalidator"
-Documentation = "https://github.com/yourusername/emrvalidator#readme"
-Repository = "https://github.com/yourusername/emrvalidator"
-"Bug Tracker" = "https://github.com/yourusername/emrvalidator/issues"
-Changelog = "https://github.com/yourusername/emrvalidator/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/rohandesai007/EMRV"
+Documentation = "https://github.com/rohandesai007/EMRV#readme"
+Repository = "https://github.com/rohandesai007/EMRV"
+"Bug Tracker" = "https://github.com/rohandesai007/EMRV/issues"
+Changelog = "https://github.com/rohandesai007/EMRV/blob/main/CHANGELOG.md"
 
 [tool.setuptools]
 packages = ["emrvalidator"]

@@ -10,7 +10,7 @@ By participating in this project, you agree to maintain a respectful and inclusi
 
 ### Reporting Bugs
 
-1. Check if the bug has already been reported in [Issues](https://github.com/yourusername/emrvalidator/issues)
+1. Check if the bug has already been reported in [Issues](https://github.com/rohandesai007/EMRV/issues)
 2. If not, create a new issue with:
    - Clear title and description
    - Steps to reproduce
@@ -20,7 +20,7 @@ By participating in this project, you agree to maintain a respectful and inclusi
 
 ### Suggesting Features
 
-1. Check [existing feature requests](https://github.com/yourusername/emrvalidator/issues?q=is%3Aissue+is%3Aopen+label%3Aenhancement)
+1. Check [existing feature requests](https://github.com/rohandesai007/EMRV/issues?q=is%3Aissue+is%3Aopen+label%3Aenhancement)
 2. Create a new issue with:
    - Clear description of the feature
    - Use case and benefits
@@ -30,8 +30,8 @@ By participating in this project, you agree to maintain a respectful and inclusi
 
 1. **Fork the repository**
    ```bash
-   git clone https://github.com/yourusername/emrvalidator.git
-   cd emrvalidator
+   git clone https://github.com/rohandesai007/EMRV.git
+   cd EMRV
    ```
 
 2. **Create a branch**
@@ -225,8 +225,8 @@ Don't forget to:
 ## Questions?
 
 - Open an issue for questions
-- Join discussions on GitHub Discussions
-- Email: your-email@example.com
+- Join discussions on [GitHub Discussions](https://github.com/rohandesai007/EMRV/discussions)
+- Email: rohan.acme@gmail.com
 
 ## License
 
@@ -234,4 +234,6 @@ By contributing, you agree that your contributions will be licensed under the MI
 
 ---
 
-Thank you for contributing to EMRValidator! 🎉
+**EMRValidator** is maintained by **Rohan Desai & Vaishnavi Sanjay Gadve**
+
+Thank you for contributing to EMRValidator!

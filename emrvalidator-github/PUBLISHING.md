@@ -40,12 +40,13 @@ Edit `pyproject.toml`:
 name = "emrvalidator"
 version = "1.0.0"  # Update version
 authors = [
-    {name = "Your Name", email = "your-email@example.com"}
+    {name = "Rohan Desai", email = "rohan.acme@gmail.com"},
+    {name = "Vaishnavi Sanjay Gadve", email = "vaishnavigadve143@gmail.com"}
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/emrvalidator"
-Repository = "https://github.com/yourusername/emrvalidator"
+Homepage = "https://github.com/rohandesai007/EMRV"
+Repository = "https://github.com/rohandesai007/EMRV"
 ```
 
 ## Manual Publishing (First Time)
@@ -272,4 +273,6 @@ pip install emrvalidator
 
 ---
 
-Need help? Open an issue on GitHub!
+**EMRValidator** is maintained by **Rohan Desai & Vaishnavi Sanjay Gadve**
+
+Need help? Open an issue on [GitHub](https://github.com/rohandesai007/EMRV/issues)!

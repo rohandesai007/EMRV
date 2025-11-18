@@ -20,8 +20,8 @@ python
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/emrvalidator.git
-cd emrvalidator
+git clone https://github.com/rohandesai007/EMRV.git
+cd EMRV
 
 # Create virtual environment
 python -m venv venv
@@ -128,7 +128,7 @@ emrvalidator/
 
 1. **Create GitHub Repository**
    ```bash
-   # On GitHub.com, create new repository: emrvalidator
+   # On GitHub.com, create new repository: EMRV
    ```
 
 2. **Push Code**
@@ -137,7 +137,7 @@ emrvalidator/
    git add .
    git commit -m "Initial commit: EMRValidator v1.0.0"
    git branch -M main
-   git remote add origin https://github.com/yourusername/emrvalidator.git
+   git remote add origin https://github.com/rohandesai007/EMRV.git
    git push -u origin main
    ```
 
@@ -340,18 +340,18 @@ isort emrvalidator tests
 
 ## Resources
 
-- [GitHub Repository](https://github.com/yourusername/emrvalidator)
+- [GitHub Repository](https://github.com/rohandesai007/EMRV)
 - [PyPI Package](https://pypi.org/project/emrvalidator/)
-- [Issue Tracker](https://github.com/yourusername/emrvalidator/issues)
-- [Discussions](https://github.com/yourusername/emrvalidator/discussions)
+- [Issue Tracker](https://github.com/rohandesai007/EMRV/issues)
+- [Discussions](https://github.com/rohandesai007/EMRV/discussions)
 
 ## Support
 
-- **Bug Reports**: [GitHub Issues](https://github.com/yourusername/emrvalidator/issues)
-- **Feature Requests**: [GitHub Issues](https://github.com/yourusername/emrvalidator/issues)
-- **Questions**: [GitHub Discussions](https://github.com/yourusername/emrvalidator/discussions)
-- **Email**: your-email@example.com
+- **Bug Reports**: [GitHub Issues](https://github.com/rohandesai007/EMRV/issues)
+- **Feature Requests**: [GitHub Issues](https://github.com/rohandesai007/EMRV/issues)
+- **Questions**: [GitHub Discussions](https://github.com/rohandesai007/EMRV/discussions)
+- **Email**: rohan.acme@gmail.com
 
 ---
 
-
+**EMRValidator** is maintained by **Rohan Desai & Vaishnavi Sanjay Gadve**

@@ -414,10 +414,10 @@ If you find EMRValidator useful, please consider giving it a star on GitHub!
 If you use EMRValidator in your research or project, please cite:
 
 ```bibtex
-@software{emrvalidator2024,
+@software{emrvalidator2025,
   title = {EMRValidator: Healthcare-Focused Data Quality and Validation},
   author = {Desai, Rohan and Gadve, Vaishnavi},
-  year = {2024},
+  year = {2025},
   url = {https://github.com/rohandesai007/EMRV}
 }
 ```
