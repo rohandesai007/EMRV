@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "emrvalidator"
-version = "1.0.0"
+version = "1.0.1"
 description = "A modern, healthcare-focused data quality and validation library - cleaner and faster than Great Expectations"
 readme = "README.md"
 authors = [
