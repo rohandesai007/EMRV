@@ -294,4 +294,4 @@ You now have everything you need to:
 
 **Questions?** Everything is documented in the package files!
 
-**Ready?** Download, extract, update, and upload! 🚀
+**Ready?** Download, extract, update, and upload! 
