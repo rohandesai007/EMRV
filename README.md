@@ -306,8 +306,8 @@ tests/
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/emrvalidator.git
-cd emrvalidator
+git clone https://github.com/rohandesai007/EMRV.git
+cd EMRV
 
 # Create virtual environment
 python -m venv venv
@@ -386,14 +386,14 @@ LinkedIn: https://www.linkedin.com/in/vaishnavi-gadve-4b577512a/
 
 ## 🙏 Acknowledgments
 
-- Created by [Healthcare Analytics Hub](https://github.com/yourusername)
+- Created by [Healthcare Analytics Hub](https://github.com/rohandesai007/EMRV)
 - Inspired by the need for simpler, healthcare-focused data validation
 - Built for the healthcare analytics community
 
 ## 📧 Contact & Support
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/emrvalidator/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/emrvalidator/discussions)
+- **Issues**: [GitHub Issues](https://github.com/rohandesai007/EMRV/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/rohandesai007/EMRV/discussions)
 - **Email**: rohan.acme@gmail.com
 
 ## 🌟 Star History
@@ -419,7 +419,7 @@ If you use EMRValidator in your research or project, please cite:
   title = {EMRValidator: Healthcare-Focused Data Quality and Validation},
   author = {Desai, Rohan and Gadve, Vaishnavi},
   year = {2024},
-  url = {https://github.com/yourusername/emrvalidator}
+  url = {https://github.com/rohandesai007/EMRV}
 }
 ```
 

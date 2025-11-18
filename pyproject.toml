@@ -69,11 +69,11 @@ docs = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/emrvalidator"
-Documentation = "https://github.com/yourusername/emrvalidator#readme"
-Repository = "https://github.com/yourusername/emrvalidator"
-"Bug Tracker" = "https://github.com/yourusername/emrvalidator/issues"
-Changelog = "https://github.com/yourusername/emrvalidator/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/rohandesai007/EMRV"
+Documentation = "https://github.com/rohandesai007/EMRV#readme"
+Repository = "https://github.com/rohandesai007/EMRV"
+"Bug Tracker" = "https://github.com/rohandesai007/EMRV/issues"
+Changelog = "https://github.com/rohandesai007/EMRV/blob/main/CHANGELOG.md"
 
 [tool.setuptools]
 packages = ["emrvalidator"]
