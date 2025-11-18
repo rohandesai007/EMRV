@@ -11,7 +11,7 @@ from .rules import ValidationRule, RuleSet, Expectation, ExpectationSuite, Healt
 from .reporters import ValidationReport, HTMLReporter, JSONReporter
 from .profiler import DataProfiler
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 __all__ = [
     "DataValidator",
     "ValidationRule",
