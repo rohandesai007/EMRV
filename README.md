@@ -3,7 +3,6 @@
 [![PyPI version](https://badge.fury.io/py/emrvalidator.svg)](https://badge.fury.io/py/emrvalidator)
 [![Python Versions](https://img.shields.io/pypi/pyversions/emrvalidator.svg)](https://pypi.org/project/emrvalidator/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Downloads](https://pepy.tech/badge/emrvalidator)](https://pepy.tech/project/emrvalidator)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 **A modern, healthcare-focused data quality and validation library**
