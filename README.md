@@ -20,6 +20,17 @@ EMRValidator is a Python library designed as a cleaner, faster, and more intuiti
 - **🎨 Multiple APIs**: Choose between fluent, expectation-based, or rule-set patterns
 - **📦 Minimal Dependencies**: Only pandas and numpy required
 
+## EMRValidator If You Need:
+
+- **Data quality rules for EMR, claims, or clinical datasets**
+- **Fast validation for millions of rows**
+- **Healthcare-specific formats (ICD, MRN, CPT, NDC)**
+- **Validation in ETL, Airflow, dbt, or LLM pipelines**
+
+## Don’t Use It If:
+
+- **You need schema evolution tracking across multiple batches**
+
 ## 🚀 Installation
 
 ```bash
