@@ -426,7 +426,7 @@ class DataValidator:
         Check if all validations passed
         
         Args:
-            include_warnings: If True, warnings also cause this to return False
+            include_warnings: If True, warnings can also cause this to return False
         """
         if include_warnings:
             return self.metadata["failed"] == 0 and self.metadata["warnings"] == 0
