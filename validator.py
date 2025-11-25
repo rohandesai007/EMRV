@@ -65,7 +65,7 @@ class DataValidator:
         self.metadata["total_rows"] = len(self.data)
         self.metadata["total_columns"] = len(self.data.columns)
         return self
-    
+    #code optmz needed - block 1
     def expect_column_exists(self, column: str, critical: bool = True) -> 'DataValidator':
         """Check if column exists in dataset"""
         result = {
@@ -113,7 +113,7 @@ class DataValidator:
         }
         self._record_result(result)
         return self
-    
+    #code optmz needed - block 2 tecting in progress
     def expect_column_values_in_set(self, column: str, value_set: set, 
                                    threshold: float = 1.0, critical: bool = True) -> 'DataValidator':
         """
