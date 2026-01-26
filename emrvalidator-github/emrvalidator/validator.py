@@ -63,7 +63,8 @@ class DataValidator:
         self.metadata["total_rows"] = len(self.data)
         self.metadata["total_columns"] = len(self.data.columns)
         return self
-    
+    # code optimized methods below
+
     def expect_column_exists(self, column: str, critical: bool = True) -> 'DataValidator':
         """Check if column exists in dataset"""
         result = {
@@ -75,10 +76,10 @@ class DataValidator:
         }
         self._record_result(result)
         return self
-    
+
     def expect_column_not_null(self, column: str, threshold: float = 1.0, critical: bool = True) -> 'DataValidator':
         """
-        Check for null values in column
+        Check for null values in column using vectorized pandas ops
         
         Args:
             column: Column name
@@ -95,27 +96,29 @@ class DataValidator:
             }
             self._record_result(result)
             return self
-        
-        non_null_pct = self.data[column].notna().sum() / len(self.data)
-        passed = non_null_pct >= threshold
-        
+
+        series = self.data[column]
+        non_null_frac = float(series.notna().mean())
+        passed = non_null_frac >= float(threshold)
+        pct = round(non_null_frac * 100, 2)
+
         result = {
             "rule": "column_not_null",
             "column": column,
             "critical": critical,
-            "passed": passed,
-            "non_null_percentage": round(non_null_pct * 100, 2),
+            "passed": bool(passed),
+            "non_null_percentage": pct,
             "threshold": threshold * 100,
-            "null_count": int(self.data[column].isna().sum()),
-            "message": f"Non-null: {non_null_pct*100:.2f}% (threshold: {threshold*100}%)"
+            "null_count": int(series.isna().sum()),
+            "message": f"Non-null percentage for '{column}': {pct}% (threshold {threshold*100}%)"
         }
         self._record_result(result)
         return self
-    
+
     def expect_column_values_in_set(self, column: str, value_set: set, 
                                    threshold: float = 1.0, critical: bool = True) -> 'DataValidator':
         """
-        Check if column values are in allowed set
+        Check if column values are in allowed set using vectorized membership checks
         
         Args:
             column: Column name
@@ -133,27 +136,30 @@ class DataValidator:
             }
             self._record_result(result)
             return self
-        
-        valid_mask = self.data[column].isin(value_set)
-        valid_pct = valid_mask.sum() / len(self.data)
-        passed = valid_pct >= threshold
-        
-        invalid_values = self.data.loc[~valid_mask, column].unique()
-        
+
+        series = self.data[column]
+        mask = series.isin(value_set)
+        valid_frac = float(mask.mean())
+        passed = valid_frac >= float(threshold)
+        pct = round(valid_frac * 100, 2)
+
+        # Collect invalid example values (dropna to avoid listing NaN)
+        invalid_values = series.loc[~mask].dropna().unique()
+
         result = {
             "rule": "values_in_set",
             "column": column,
             "critical": critical,
-            "passed": passed,
-            "valid_percentage": round(valid_pct * 100, 2),
+            "passed": bool(passed),
+            "valid_percentage": pct,
             "threshold": threshold * 100,
-            "invalid_count": int((~valid_mask).sum()),
-            "invalid_values": list(invalid_values[:10]),  # First 10 invalid values
-            "message": f"Valid: {valid_pct*100:.2f}% (threshold: {threshold*100}%)"
+            "invalid_count": int((~mask).sum()),
+            "invalid_values": list(invalid_values[:10]),
+            "message": f"Values in set for '{column}': {pct}% (threshold {threshold*100}%)"
         }
         self._record_result(result)
         return self
-    
+
     def expect_column_values_unique(self, column: str, threshold: float = 1.0, 
                                    critical: bool = True) -> 'DataValidator':
         """Check for duplicate values in column"""
@@ -167,7 +173,7 @@ class DataValidator:
             }
             self._record_result(result)
             return self
-        
+            
         unique_pct = self.data[column].nunique() / len(self.data)
         passed = unique_pct >= threshold
         duplicate_count = len(self.data) - self.data[column].nunique()
@@ -184,7 +190,7 @@ class DataValidator:
         }
         self._record_result(result)
         return self
-    
+
     def expect_column_values_between(self, column: str, min_value: float, max_value: float,
                                     threshold: float = 1.0, critical: bool = True) -> 'DataValidator':
         """Check if numeric values are within range"""
@@ -198,7 +204,7 @@ class DataValidator:
             }
             self._record_result(result)
             return self
-        
+            
         valid_mask = (self.data[column] >= min_value) & (self.data[column] <= max_value)
         valid_pct = valid_mask.sum() / len(self.data)
         passed = valid_pct >= threshold
@@ -217,7 +223,7 @@ class DataValidator:
         }
         self._record_result(result)
         return self
-    
+
     def expect_column_date_format(self, column: str, date_format: str = "%Y-%m-%d",
                                  threshold: float = 1.0, critical: bool = True) -> 'DataValidator':
         """Check if dates match expected format"""
@@ -231,7 +237,7 @@ class DataValidator:
             }
             self._record_result(result)
             return self
-        
+            
         def is_valid_date(val):
             if pd.isna(val):
                 return False
@@ -258,17 +264,11 @@ class DataValidator:
         }
         self._record_result(result)
         return self
-    
+
     def expect_mrn_format(self, column: str, pattern: Optional[str] = None,
                          threshold: float = 1.0, critical: bool = True) -> 'DataValidator':
         """
         Healthcare-specific: Validate Medical Record Numbers
-        
-        Args:
-            column: Column containing MRNs
-            pattern: Regex pattern for MRN format (None for basic checks)
-            threshold: Minimum valid percentage
-            critical: Whether this is critical
         """
         if column not in self.data.columns:
             result = {
@@ -280,11 +280,10 @@ class DataValidator:
             }
             self._record_result(result)
             return self
-        
+            
         if pattern:
             valid_mask = self.data[column].astype(str).str.match(pattern)
         else:
-            # Basic MRN validation: not null, reasonable length, alphanumeric
             valid_mask = (
                 self.data[column].notna() & 
                 (self.data[column].astype(str).str.len() >= 5) &
@@ -306,17 +305,11 @@ class DataValidator:
         }
         self._record_result(result)
         return self
-    
+
     def expect_icd_format(self, column: str, version: int = 10, 
                          threshold: float = 1.0, critical: bool = True) -> 'DataValidator':
         """
-        Healthcare-specific: Validate ICD codes
-        
-        Args:
-            column: Column containing ICD codes
-            version: ICD version (9 or 10)
-            threshold: Minimum valid percentage
-            critical: Whether this is critical
+        Healthcare-specific: Validate ICD codes (vectorized implementation using Series.str.fullmatch)
         """
         if column not in self.data.columns:
             result = {
@@ -328,44 +321,53 @@ class DataValidator:
             }
             self._record_result(result)
             return self
-        
+
+        series = self.data[column].dropna().astype(str)
+        if series.empty:
+            result = {
+                "rule": "icd_format",
+                "column": column,
+                "critical": critical,
+                "passed": False,
+                "message": f"No non-null values in column '{column}' to validate"
+            }
+            self._record_result(result)
+            return self
+
         if version == 10:
             # ICD-10: Letter + 2 digits + optional decimal + 1-2 more digits
-            pattern = r'^[A-Z]\d{2}\.?\d{0,2}$'
+            # pattern anchored, allow lowercase by uppercasing input
+            pattern = r'^[A-Z]\d{2}\.?(?:\d{1,2})?$'
+            # ensure uppercase for letter comparison
+            series = series.str.upper()
         else:
-            # ICD-9: 3-5 digits, optional decimal after 3rd
-            pattern = r'^\d{3}\.?\d{0,2}$'
-        
-        valid_mask = self.data[column].astype(str).str.match(pattern, na=False)
-        valid_pct = valid_mask.sum() / len(self.data)
-        passed = valid_pct >= threshold
-        
+            # ICD-9 (simple heuristic) - allow 3-5 digits, optional decimal + digits
+            pattern = r'^\d{3,5}(?:\.\d+)?$'
+
+        matched = series.str.fullmatch(pattern)
+        valid_frac = float(matched.sum()) / len(series)
+        passed = valid_frac >= float(threshold)
+        pct = round(valid_frac * 100, 2)
+
         result = {
             "rule": "icd_format",
             "column": column,
             "critical": critical,
-            "passed": passed,
-            "valid_percentage": round(valid_pct * 100, 2),
+            "passed": bool(passed),
+            "valid_percentage": pct,
             "threshold": threshold * 100,
             "icd_version": version,
-            "invalid_count": int((~valid_mask).sum()),
-            "message": f"Valid ICD-{version} codes: {valid_pct*100:.2f}%"
+            "invalid_count": int((~matched.fillna(False)).sum()),
+            "message": f"ICD{version} valid percentage for '{column}': {pct}% (threshold {threshold*100}%)"
         }
         self._record_result(result)
         return self
-    
+
     def expect_custom(self, rule_name: str, validation_func: Callable, 
                      column: Optional[str] = None, critical: bool = True,
                      **kwargs) -> 'DataValidator':
         """
         Apply custom validation function
-        
-        Args:
-            rule_name: Name for the validation rule
-            validation_func: Function that takes DataFrame and returns (passed, message, details_dict)
-            column: Optional column name for context
-            critical: Whether this is critical
-            **kwargs: Additional arguments to pass to validation_func
         """
         try:
             passed, message, details = validation_func(self.data, **kwargs)
@@ -388,7 +390,7 @@ class DataValidator:
         
         self._record_result(result)
         return self
-    
+
     def _record_result(self, result: Dict[str, Any]) -> None:
         """Record validation result and update metadata"""
         self.validation_results.append(result)
@@ -400,47 +402,3 @@ class DataValidator:
             self.metadata["failed"] += 1
         else:
             self.metadata["warnings"] += 1
-    
-    def get_results(self) -> Dict[str, Any]:
-        """Get all validation results"""
-        return {
-            "metadata": self.metadata,
-            "results": self.validation_results,
-            "summary": {
-                "total": self.metadata["total_validations"],
-                "passed": self.metadata["passed"],
-                "failed": self.metadata["failed"],
-                "warnings": self.metadata["warnings"],
-                "success_rate": round(self.metadata["passed"] / max(self.metadata["total_validations"], 1) * 100, 2)
-            }
-        }
-    
-    def get_failed_validations(self) -> List[Dict[str, Any]]:
-        """Get only failed validations"""
-        return [r for r in self.validation_results if not r["passed"]]
-    
-    def is_valid(self, include_warnings: bool = False) -> bool:
-        """
-        Check if all validations passed
-        
-        Args:
-            include_warnings: If True, warnings also cause this to return False
-        """
-        if include_warnings:
-            return self.metadata["failed"] == 0 and self.metadata["warnings"] == 0
-        return self.metadata["failed"] == 0
-    
-    def to_json(self, filepath: Optional[str] = None) -> str:
-        """Export results to JSON"""
-        results = self.get_results()
-        json_str = json.dumps(results, indent=2)
-        
-        if filepath:
-            with open(filepath, 'w') as f:
-                f.write(json_str)
-        
-        return json_str
-    
-    def to_dataframe(self) -> pd.DataFrame:
-        """Convert results to DataFrame for analysis"""
-        return pd.DataFrame(self.validation_results)

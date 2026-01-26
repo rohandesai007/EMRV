@@ -61,12 +61,16 @@ class DataProfiler:
         """Overall dataset statistics"""
         duplicate_rows = self.data.duplicated().sum()
         
+        total_cells = len(self.data) * len(self.data.columns) if len(self.data) and len(self.data.columns) else 0
+        total_missing = int(self.data.isna().sum().sum())
+        missing_percentage = round(total_missing / total_cells * 100, 2) if total_cells else 0.0
+        
         return {
-            "total_cells": len(self.data) * len(self.data.columns),
-            "total_missing": int(self.data.isna().sum().sum()),
-            "missing_percentage": round(self.data.isna().sum().sum() / (len(self.data) * len(self.data.columns)) * 100, 2),
+            "total_cells": total_cells,
+            "total_missing": total_missing,
+            "missing_percentage": missing_percentage,
             "duplicate_rows": int(duplicate_rows),
-            "duplicate_percentage": round(duplicate_rows / len(self.data) * 100, 2),
+            "duplicate_percentage": round(duplicate_rows / len(self.data) * 100, 2) if len(self.data) else 0.0,
             "column_types": self.data.dtypes.value_counts().to_dict()
         }
     
@@ -83,25 +87,33 @@ class DataProfiler:
         """Profile a single column"""
         col_data = self.data[column]
         
+        n = len(col_data)
+        count = int(col_data.count())
+        missing = int(col_data.isna().sum())
+        missing_percentage = round(missing / n * 100, 2) if n else 0.0
+        unique_values = int(col_data.nunique(dropna=True))
+        unique_percentage = round(unique_values / n * 100, 2) if n else 0.0
+
         profile = {
             "dtype": str(col_data.dtype),
-            "count": int(col_data.count()),
-            "missing": int(col_data.isna().sum()),
-            "missing_percentage": round(col_data.isna().sum() / len(col_data) * 100, 2),
-            "unique_values": int(col_data.nunique()),
-            "unique_percentage": round(col_data.nunique() / len(col_data) * 100, 2)
+            "count": count,
+            "missing": missing,
+            "missing_percentage": missing_percentage,
+            "unique_values": unique_values,
+            "unique_percentage": unique_percentage
         }
         
         # Numeric columns
         if pd.api.types.is_numeric_dtype(col_data):
+            not_all_na = not col_data.isna().all()
             profile.update({
-                "mean": round(float(col_data.mean()), 2) if not col_data.isna().all() else None,
-                "std": round(float(col_data.std()), 2) if not col_data.isna().all() else None,
-                "min": round(float(col_data.min()), 2) if not col_data.isna().all() else None,
-                "max": round(float(col_data.max()), 2) if not col_data.isna().all() else None,
-                "median": round(float(col_data.median()), 2) if not col_data.isna().all() else None,
-                "q25": round(float(col_data.quantile(0.25)), 2) if not col_data.isna().all() else None,
-                "q75": round(float(col_data.quantile(0.75)), 2) if not col_data.isna().all() else None,
+                "mean": round(float(col_data.mean()), 2) if not_all_na else None,
+                "std": round(float(col_data.std()), 2) if not_all_na else None,
+                "min": round(float(col_data.min()), 2) if not_all_na else None,
+                "max": round(float(col_data.max()), 2) if not_all_na else None,
+                "median": round(float(col_data.median()), 2) if not_all_na else None,
+                "q25": round(float(col_data.quantile(0.25)), 2) if not_all_na else None,
+                "q75": round(float(col_data.quantile(0.75)), 2) if not_all_na else None,
                 "zeros": int((col_data == 0).sum()),
                 "negative": int((col_data < 0).sum()),
                 "outliers": self._detect_outliers(col_data)
@@ -109,22 +121,25 @@ class DataProfiler:
         
         # Categorical/Object columns
         elif pd.api.types.is_object_dtype(col_data) or pd.api.types.is_categorical_dtype(col_data):
-            value_counts = col_data.value_counts()
+            value_counts = col_data.value_counts(dropna=True)
+            not_all_na = not col_data.isna().all()
+            str_lens = col_data.dropna().astype(str).str.len() if not_all_na else pd.Series(dtype=int)
             profile.update({
                 "top_values": value_counts.head(sample_values).to_dict(),
                 "most_common": str(value_counts.index[0]) if len(value_counts) > 0 else None,
                 "most_common_count": int(value_counts.iloc[0]) if len(value_counts) > 0 else 0,
-                "min_length": int(col_data.astype(str).str.len().min()) if not col_data.isna().all() else None,
-                "max_length": int(col_data.astype(str).str.len().max()) if not col_data.isna().all() else None,
-                "avg_length": round(float(col_data.astype(str).str.len().mean()), 2) if not col_data.isna().all() else None
+                "min_length": int(str_lens.min()) if not str_lens.empty else None,
+                "max_length": int(str_lens.max()) if not str_lens.empty else None,
+                "avg_length": round(float(str_lens.mean()), 2) if not str_lens.empty else None
             })
         
         # DateTime columns
         elif pd.api.types.is_datetime64_any_dtype(col_data):
+            not_all_na = not col_data.isna().all()
             profile.update({
-                "min_date": str(col_data.min()) if not col_data.isna().all() else None,
-                "max_date": str(col_data.max()) if not col_data.isna().all() else None,
-                "date_range_days": (col_data.max() - col_data.min()).days if not col_data.isna().all() else None
+                "min_date": str(col_data.min()) if not_all_na else None,
+                "max_date": str(col_data.max()) if not_all_na else None,
+                "date_range_days": (col_data.max() - col_data.min()).days if not_all_na else None
             })
         
         # Sample values (non-null)
@@ -134,45 +149,67 @@ class DataProfiler:
         return profile
     
     def _detect_outliers(self, series: pd.Series) -> Dict[str, Any]:
-        """Detect outliers using IQR method"""
+        """Detect outliers using IQR method (vectorized, handles NaNs safely)"""
+        if series.dropna().empty:
+            return {"count": 0, "percentage": 0.0, "lower_bound": None, "upper_bound": None}
+
         q1 = series.quantile(0.25)
         q3 = series.quantile(0.75)
         iqr = q3 - q1
-        
+
         lower_bound = q1 - 1.5 * iqr
         upper_bound = q3 + 1.5 * iqr
-        
-        outliers = ((series < lower_bound) | (series > upper_bound)).sum()
-        
+
+        # mask out NaNs before comparison for correct counting
+        mask = (series < lower_bound) | (series > upper_bound)
+        mask = mask & series.notna()
+        outliers = int(mask.sum())
+
+        non_null_count = int(series.count())
+        percentage = round(outliers / non_null_count * 100, 2) if non_null_count else 0.0
+
         return {
-            "count": int(outliers),
-            "percentage": round(outliers / len(series) * 100, 2),
+            "count": outliers,
+            "percentage": percentage,
             "lower_bound": round(float(lower_bound), 2),
             "upper_bound": round(float(upper_bound), 2)
         }
     
     def _quality_summary(self) -> Dict[str, Any]:
-        """Overall quality assessment"""
-        issues = []
-        
-        # Check for high missing data
-        for col in self.data.columns:
-            missing_pct = self.data[col].isna().sum() / len(self.data) * 100
-            if missing_pct > 50:
-                issues.append(f"High missing data in '{col}': {missing_pct:.1f}%")
-            elif missing_pct > 20:
-                issues.append(f"Moderate missing data in '{col}': {missing_pct:.1f}%")
-        
-        # Check for low cardinality in object columns
-        for col in self.data.select_dtypes(include=['object']).columns:
-            if self.data[col].nunique() == 1:
+        """Overall quality assessment (vectorized computations for speed)"""
+        df = self.data
+        n = len(df)
+        issues: List[str] = []
+
+        if n == 0:
+            return {"quality_score": self._calculate_quality_score(), "total_issues": 0, "issues": []}
+
+        # Missing data percentages (vectorized)
+        missing_pct = df.isna().mean() * 100  # Series indexed by column
+
+        high_missing = missing_pct[missing_pct > 50]
+        moderate_missing = missing_pct[(missing_pct > 20) & (missing_pct <= 50)]
+
+        for col, pct in high_missing.items():
+            issues.append(f"High missing data in '{col}': {pct:.1f}%")
+        for col, pct in moderate_missing.items():
+            issues.append(f"Moderate missing data in '{col}': {pct:.1f}%")
+
+        # Unique counts (vectorized)
+        nunique = df.nunique(dropna=True)  # faster than calling per-column
+        object_cols = df.select_dtypes(include=['object']).columns
+
+        # Low cardinality (object columns)
+        if len(object_cols):
+            low_card = nunique.loc[object_cols][nunique.loc[object_cols] == 1]
+            for col in low_card.index:
                 issues.append(f"Column '{col}' has only one unique value")
-        
-        # Check for high cardinality
-        for col in self.data.columns:
-            if self.data[col].nunique() == len(self.data):
-                issues.append(f"Column '{col}' has all unique values (potential ID column)")
-        
+
+        # High cardinality (possible ID columns)
+        high_card = nunique[nunique == n]
+        for col in high_card.index:
+            issues.append(f"Column '{col}' has all unique values (potential ID column)")
+
         return {
             "quality_score": self._calculate_quality_score(),
             "total_issues": len(issues),
@@ -230,39 +267,38 @@ class DataProfiler:
         }
     
     def _generate_recommendations(self) -> List[str]:
-        """Generate actionable recommendations"""
-        recommendations = []
-        
-        # Missing data recommendations
-        for col in self.data.columns:
-            missing_pct = self.data[col].isna().sum() / len(self.data) * 100
-            if missing_pct > 50:
-                recommendations.append(f"Consider dropping column '{col}' due to {missing_pct:.1f}% missing data")
-            elif missing_pct > 20:
-                recommendations.append(f"Investigate missing data in '{col}' ({missing_pct:.1f}%)")
-        
-        # Duplicate recommendations
-        dup_count = self.data.duplicated().sum()
-        if dup_count > 0:
-            recommendations.append(f"Remove {dup_count} duplicate rows")
-        
-        # Data type recommendations
-        for col in self.data.select_dtypes(include=['object']).columns:
-            if self.data[col].nunique() / len(self.data) > 0.95:
-                recommendations.append(f"Column '{col}' appears to be an ID - consider using as index")
-        
-        # Healthcare-specific recommendations
-        for col in self.data.columns:
+        """Generate actionable recommendations (single-pass per-column analysis)"""
+        df = self.data
+        n = len(df)
+        if n == 0:
+            return []
+
+        recommendations: List[str] = []
+
+        # Precompute useful stats vectorized
+        nunique = df.nunique(dropna=True)
+        dtypes = df.dtypes.astype(str)
+
+        for col in df.columns:
             col_lower = col.lower()
-            if 'date' in col_lower and self.data[col].dtype == 'object':
+            col_nunique = int(nunique.get(col, 0))
+            col_dtype = dtypes.get(col, "object")
+
+            # ID detection
+            if col_nunique == n:
+                recommendations.append(f"Column '{col}' appears to be an ID - consider using as index")
+
+            # Healthcare-specific recommendations
+            if 'date' in col_lower and col_dtype == 'object':
                 recommendations.append(f"Convert '{col}' to datetime format")
-            elif 'mrn' in col_lower or 'patient_id' in col_lower:
+            if 'mrn' in col_lower or 'patient_id' in col_lower:
                 recommendations.append(f"Validate medical record numbers in '{col}'")
-            elif 'icd' in col_lower or 'diagnosis' in col_lower:
+            if 'icd' in col_lower or 'diagnosis' in col_lower:
                 recommendations.append(f"Validate ICD codes in '{col}'")
-        
-        return recommendations[:15]  # Top 15 recommendations
-    
+
+        # Keep top 15 recommendations
+        return recommendations[:15]
+
     def to_dict(self) -> Dict[str, Any]:
         """Get profile as dictionary"""
         if not self.profile:
@@ -299,3 +335,4 @@ class DataProfiler:
             print(f"{i}. {rec}")
         
         print(f"\n{'='*60}\n")
+
