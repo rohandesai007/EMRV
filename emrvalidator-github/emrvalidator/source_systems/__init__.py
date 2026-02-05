@@ -4,7 +4,7 @@ Source-system rule sets for common EMR exports.
 
 from __future__ import annotations
 
-from typing import List
+from typing import Dict, List
 
 import pandas as pd
 
@@ -64,4 +64,13 @@ def validate_source_system(data: pd.DataFrame, system: str):
     return ruleset.execute_all(data)
 
 
-__all__ = ["SourceSystemRuleSets", "validate_source_system"]
+def get_system_aliases(system: str) -> Dict[str, List[str]]:
+    key = system.strip().lower()
+    if key not in _SYSTEMS:
+        supported = ", ".join(sorted(_SYSTEMS.keys()))
+        raise ValueError(f"Unsupported system '{system}'. Supported: {supported}")
+    module = _SYSTEMS[key]
+    return {k: list(v) for k, v in getattr(module, "COLUMN_ALIASES", {}).items()}
+
+
+__all__ = ["SourceSystemRuleSets", "validate_source_system", "get_system_aliases"]
