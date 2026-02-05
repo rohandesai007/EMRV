@@ -10,6 +10,7 @@ from .validator import DataValidator
 from .rules import ValidationRule, RuleSet, Expectation, ExpectationSuite, HealthcareRuleSets
 from .reporters import ValidationReport, HTMLReporter, JSONReporter
 from .profiler import DataProfiler
+from .source_systems import SourceSystemRuleSets, validate_source_system
 
 __version__ = "1.0.1"
 __all__ = [
@@ -22,5 +23,7 @@ __all__ = [
     "DataProfiler",
     "Expectation",
     "ExpectationSuite",
-    "HealthcareRuleSets"
+    "HealthcareRuleSets",
+    "SourceSystemRuleSets",
+    "validate_source_system"
 ]
