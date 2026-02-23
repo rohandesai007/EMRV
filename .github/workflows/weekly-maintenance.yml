@@ -1,0 +1,299 @@
+name: Weekly Maintenance
+
+on:
+  schedule:
+    # Runs every Monday at 06:00 UTC
+    - cron: '0 6 * * 1'
+  workflow_dispatch: {}   # allows manual runs from the Actions tab
+
+# Least-privilege: only write access needed to create branches and open PRs.
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  maintenance:
+    runs-on: ubuntu-latest
+    env:
+      PACKAGE_DIR: emrvalidator-github
+
+    steps:
+      # ── Setup ──────────────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get current date
+        id: date
+        run: echo "date=$(date -u +'%Y-%m-%d')" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dev dependencies
+        working-directory: ${{ env.PACKAGE_DIR }}
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+          pip install pyyaml
+
+      # ── Read guardrails config ──────────────────────────────────────────────
+      - name: Read guardrails config
+        id: config
+        run: |
+          python3 - <<'PYEOF'
+          import yaml, os, sys
+
+          config_path = '.github/weekly-agent.yml'
+          try:
+              with open(config_path) as f:
+                  cfg = yaml.safe_load(f)
+          except FileNotFoundError:
+              print(f"Config not found at {config_path}, using defaults.", file=sys.stderr)
+              cfg = {}
+
+          phases         = cfg.get('phases', {})
+          phase_a        = phases.get('phase_a', {}).get('enabled', True)
+          phase_b        = phases.get('phase_b', {}).get('enabled', False)
+          on_fail        = str(cfg.get('open_pr_on_test_failure', False)).lower()
+          g              = cfg.get('guardrails', {})
+          max_files      = g.get('max_files_changed', 30)
+          max_lines      = g.get('max_lines_changed', 400)
+          never_touch    = '\n'.join(g.get('never_touch', []))
+          include_paths  = '\n'.join(g.get('include_paths', []))
+          exclude_paths  = '\n'.join(g.get('exclude_paths', []))
+
+          out = os.environ['GITHUB_OUTPUT']
+          with open(out, 'a') as fh:
+              fh.write(f"phase_a={'true' if phase_a else 'false'}\n")
+              fh.write(f"phase_b={'true' if phase_b else 'false'}\n")
+              fh.write(f"open_pr_on_test_failure={on_fail}\n")
+              fh.write(f"max_files_changed={max_files}\n")
+              fh.write(f"max_lines_changed={max_lines}\n")
+              fh.write(f"never_touch<<GUARDRAIL_EOF\n{never_touch}\nGUARDRAIL_EOF\n")
+              fh.write(f"include_paths<<GUARDRAIL_EOF\n{include_paths}\nGUARDRAIL_EOF\n")
+              fh.write(f"exclude_paths<<GUARDRAIL_EOF\n{exclude_paths}\nGUARDRAIL_EOF\n")
+          PYEOF
+
+      # ── Phase A: formatting and linting ────────────────────────────────────
+      - name: Phase A – Format with black
+        if: steps.config.outputs.phase_a == 'true'
+        working-directory: ${{ env.PACKAGE_DIR }}
+        run: black emrvalidator tests
+
+      - name: Phase A – Sort imports with isort
+        if: steps.config.outputs.phase_a == 'true'
+        working-directory: ${{ env.PACKAGE_DIR }}
+        run: isort emrvalidator tests
+
+      - name: Phase A – Lint report (flake8, report only)
+        if: steps.config.outputs.phase_a == 'true'
+        working-directory: ${{ env.PACKAGE_DIR }}
+        run: |
+          flake8 emrvalidator tests \
+            --count --exit-zero \
+            --max-complexity=10 \
+            --max-line-length=100 \
+            --statistics \
+            2>&1 | tee /tmp/flake8-report.txt
+          echo "--- flake8 lint report saved ---"
+
+      # ── Guardrails check ───────────────────────────────────────────────────
+      - name: Check guardrails
+        id: guardrails
+        run: |
+          python3 - <<'PYEOF'
+          import subprocess, os, re, sys, fnmatch
+
+          max_files = int(os.environ.get('MAX_FILES', '30'))
+          max_lines = int(os.environ.get('MAX_LINES', '400'))
+
+          def parse_list(raw):
+              return [p.strip() for p in raw.splitlines() if p.strip()]
+
+          never_touch    = parse_list(os.environ.get('NEVER_TOUCH', ''))
+          include_paths  = parse_list(os.environ.get('INCLUDE_PATHS', ''))
+          exclude_paths  = parse_list(os.environ.get('EXCLUDE_PATHS', ''))
+
+          def normalize(p):
+              return os.path.normpath(p)
+
+          def matches_any(path, patterns):
+              return any(fnmatch.fnmatch(path, pat) for pat in patterns)
+
+          def git(*args):
+              return subprocess.run(['git'] + list(args),
+                                    capture_output=True, text=True).stdout.strip()
+
+          changed_files = [f for f in git('diff', '--name-only').splitlines() if f]
+
+          # Never-touch check (normalize both sides for reliable comparison)
+          norm_never = {normalize(p) for p in never_touch}
+          violations = [f for f in changed_files if normalize(f) in norm_never]
+          if violations:
+              print(f"::error::Guardrail violated – never-touch files changed: {violations}")
+              subprocess.run(['git', 'checkout', '--', '.'])
+              changed_files = []
+
+          # Exclude-paths check: revert any file that matches an exclude pattern
+          if changed_files and exclude_paths:
+              out_of_bounds = [f for f in changed_files if matches_any(f, exclude_paths)]
+              if out_of_bounds:
+                  print(f"::warning::Guardrail: changes in excluded paths: {out_of_bounds}. Reverting those files.")
+                  for f in out_of_bounds:
+                      subprocess.run(['git', 'checkout', '--', f])
+                  changed_files = [f for f in changed_files if f not in out_of_bounds]
+
+          # Include-paths check: revert any file NOT matching the include patterns
+          if changed_files and include_paths:
+              out_of_scope = [f for f in changed_files if not matches_any(f, include_paths)]
+              if out_of_scope:
+                  print(f"::warning::Guardrail: changes outside include_paths: {out_of_scope}. Reverting those files.")
+                  for f in out_of_scope:
+                      subprocess.run(['git', 'checkout', '--', f])
+                  changed_files = [f for f in changed_files if f not in out_of_scope]
+
+          # Max-files check
+          if len(changed_files) > max_files:
+              print(f"::warning::Guardrail: too many files changed "
+                    f"({len(changed_files)} > {max_files}). Reverting.")
+              subprocess.run(['git', 'checkout', '--', '.'])
+              changed_files = []
+
+          # Max-lines check (insertions + deletions)
+          if changed_files:
+              stat = git('diff', '--stat')
+              numbers = re.findall(r'(\d+) (?:insertion|deletion)', stat)
+              total_changes = sum(int(n) for n in numbers)
+              if total_changes > max_lines:
+                  print(f"::warning::Guardrail: too many lines changed "
+                        f"({total_changes} > {max_lines}). Reverting.")
+                  subprocess.run(['git', 'checkout', '--', '.'])
+                  changed_files = []
+
+          has_changes = 'true' if changed_files else 'false'
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
+              fh.write(f"has_changes={has_changes}\n")
+
+          print(f"has_changes={has_changes}, files={changed_files}")
+          PYEOF
+        env:
+          MAX_FILES: ${{ steps.config.outputs.max_files_changed }}
+          MAX_LINES: ${{ steps.config.outputs.max_lines_changed }}
+          NEVER_TOUCH: ${{ steps.config.outputs.never_touch }}
+          INCLUDE_PATHS: ${{ steps.config.outputs.include_paths }}
+          EXCLUDE_PATHS: ${{ steps.config.outputs.exclude_paths }}
+
+      # ── Run tests ──────────────────────────────────────────────────────────
+      - name: Run test suite
+        id: tests
+        working-directory: ${{ env.PACKAGE_DIR }}
+        continue-on-error: true
+        run: |
+          pytest --tb=short -q 2>&1 | tee /tmp/test-results.txt
+          echo "exit_code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+
+      - name: Evaluate test outcome
+        id: test_check
+        run: |
+          if [ "${{ steps.tests.outcome }}" = "success" ]; then
+            echo "tests_passed=true"  >> "$GITHUB_OUTPUT"
+          else
+            echo "tests_passed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # ── Assemble PR body ───────────────────────────────────────────────────
+      - name: Build PR body
+        id: pr_body
+        run: |
+          python3 - <<'PYEOF'
+          import os
+
+          date        = os.environ.get('RUN_DATE', 'unknown')
+          phase_a     = os.environ.get('PHASE_A', 'false') == 'true'
+          phase_b     = os.environ.get('PHASE_B', 'false') == 'true'
+          tests_ok    = os.environ.get('TESTS_PASSED', 'false') == 'true'
+          has_changes = os.environ.get('HAS_CHANGES', 'false') == 'true'
+
+          try:
+              with open('/tmp/flake8-report.txt') as f:
+                  lint_output = f.read().strip() or '(no issues found)'
+          except FileNotFoundError:
+              lint_output = '(lint step skipped)'
+
+          try:
+              with open('/tmp/test-results.txt') as f:
+                  test_output = f.read().strip() or '(no output)'
+          except FileNotFoundError:
+              test_output = '(tests not run)'
+
+          status_icon  = '✅' if tests_ok else '❌'
+          changes_icon = '📝' if has_changes else '✔️ (nothing changed)'
+
+          body = f"""## Weekly Automated Maintenance – {date}
+
+          ### Summary
+          | Item | Status |
+          |------|--------|
+          | Changes detected | {changes_icon} |
+          | Tests | {status_icon} {'passed' if tests_ok else '**FAILED**'} |
+          | Phase A (formatting) | {'✅ ran' if phase_a else '⏭ skipped'} |
+          | Phase B (refactors) | {'✅ ran' if phase_b else '⏭ skipped (disabled)'} |
+
+          ### Phase A – Lint report
+          <details><summary>flake8 output</summary>
+
+          ```
+          {lint_output}
+          ```
+
+          </details>
+
+          ### Test results
+          <details><summary>pytest output</summary>
+
+          ```
+          {test_output}
+          ```
+
+          </details>
+
+          ---
+          *Generated automatically by the [weekly-maintenance workflow](.github/workflows/weekly-maintenance.yml).*
+          *Adjust behaviour in [`.github/weekly-agent.yml`](.github/weekly-agent.yml).*
+          """
+
+          # Dedent so GitHub renders cleanly
+          import textwrap
+          body = textwrap.dedent(body)
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
+              fh.write("body<<PRBODYEOF\n")
+              fh.write(body)
+              fh.write("\nPRBODYEOF\n")
+          PYEOF
+        env:
+          RUN_DATE: ${{ steps.date.outputs.date }}
+          PHASE_A: ${{ steps.config.outputs.phase_a }}
+          PHASE_B: ${{ steps.config.outputs.phase_b }}
+          TESTS_PASSED: ${{ steps.test_check.outputs.tests_passed }}
+          HAS_CHANGES: ${{ steps.guardrails.outputs.has_changes }}
+
+      # ── Create / update PR ─────────────────────────────────────────────────
+      - name: Create Pull Request
+        if: |
+          steps.guardrails.outputs.has_changes == 'true' &&
+          (steps.test_check.outputs.tests_passed == 'true' ||
+           steps.config.outputs.open_pr_on_test_failure == 'true')
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: bot/weekly-maintenance-${{ steps.date.outputs.date }}
+          delete-branch: false
+          commit-message: "chore: weekly automated maintenance (${{ steps.date.outputs.date }})"
+          title: "Weekly maintenance (${{ steps.date.outputs.date }})"
+          body: ${{ steps.pr_body.outputs.body }}
+          labels: maintenance,automated

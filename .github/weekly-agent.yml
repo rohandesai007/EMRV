@@ -1,0 +1,49 @@
+# Weekly Maintenance Agent – Guardrails Configuration
+# See .github/weekly-agent.md for full documentation.
+
+# ── Guardrails ────────────────────────────────────────────────────────────────
+guardrails:
+  # Abort (revert all changes) if more than this many files are modified.
+  max_files_changed: 30
+
+  # Abort (revert all changes) if total insertions + deletions exceeds this.
+  max_lines_changed: 400
+
+  # Paths the agent is allowed to touch (glob patterns).
+  # An empty list means "everything not excluded".
+  include_paths:
+    - "emrvalidator-github/emrvalidator/**"
+    - "emrvalidator-github/tests/**"
+
+  # Paths the agent must never modify.
+  exclude_paths:
+    - "dist/**"
+    - "*.tar.gz"
+
+  # Individual files that must never be touched, regardless of other settings.
+  never_touch:
+    - ".github/workflows/weekly-maintenance.yml"
+    - ".github/weekly-agent.yml"
+    - "emrvalidator-github/pyproject.toml"
+    - "emrvalidator-github/.github/workflows/ci.yml"
+    - "emrvalidator-github/.github/workflows/publish.yml"
+
+# ── Phase configuration ───────────────────────────────────────────────────────
+phases:
+  # Phase A: safe mechanical improvements (formatting, import sorting, lint report)
+  phase_a:
+    enabled: true
+    formatters:
+      - black       # code formatter
+      - isort       # import sorter
+    lint_report_only: true   # flake8 findings are reported but never block the PR
+
+  # Phase B: guardrailed refactors (runs only when phase_a succeeds and tests pass)
+  phase_b:
+    enabled: false            # disabled by default; set to true to enable
+    # Future: add refactor commands here (e.g., pyupgrade, autoflake)
+
+# ── PR behaviour ──────────────────────────────────────────────────────────────
+# When true, a PR is opened even if tests fail (test failure is noted in the PR body).
+# Default is false – safer; no PR is opened when tests fail.
+open_pr_on_test_failure: false
