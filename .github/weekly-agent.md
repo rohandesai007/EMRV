@@ -8,8 +8,28 @@ This document explains the automated weekly maintenance workflow for the
 ## Overview
 
 The workflow lives at `.github/workflows/weekly-maintenance.yml`.
-It runs automatically every **Monday at 06:00 UTC** and can also be triggered
-manually from the **Actions** tab on GitHub.
+It runs automatically at **2:00 PM America/Chicago (Central Time) every Monday
+and Wednesday**, and can also be triggered manually from the **Actions** tab on
+GitHub.
+
+### Schedule and DST handling
+
+GitHub Actions `schedule` uses UTC and does not support time zones directly.
+To handle daylight saving time (DST) correctly, the workflow uses **two cron
+entries per day** — one for CDT (UTC−5) and one for CST (UTC−6):
+
+| UTC cron | Offset | Local time |
+|----------|--------|------------|
+| `0 19 * * 1` | CDT (UTC−5) | Mon 14:00 CT |
+| `0 20 * * 1` | CST (UTC−6) | Mon 14:00 CT |
+| `0 19 * * 3` | CDT (UTC−5) | Wed 14:00 CT |
+| `0 20 * * 3` | CST (UTC−6) | Wed 14:00 CT |
+
+Because both entries always fire, a **DST-safe time gate** step runs first in
+the job. It checks the current hour and day in `America/Chicago`; if the local
+time is not 14:00 on Monday or Wednesday, it sets `should_run=false` and all
+subsequent steps are skipped. Only the cron fire that truly lands at 14:00 CT
+proceeds. Manual `workflow_dispatch` runs bypass the gate entirely.
 
 When changes are produced **and** tests pass, it opens a pull request from a
 branch named `bot/weekly-maintenance-YYYY-MM-DD`.  The PR body includes a
