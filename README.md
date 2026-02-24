@@ -388,6 +388,16 @@ Email: rohan.acme@gmail.com
 GitHub: https://github.com/rohan-desai  
 LinkedIn: https://www.linkedin.com/in/rohandesai07/
 
+**My Websites:**
+- [HealthMetric](https://healthmetric.org/)
+- [Healthcare Interoperability](https://healthcareinterop.com/)
+- [Medi-Lexicon](https://medi-lexicon.org/)
+- [CleanRx Info](https://cleanrxinfo.org/)
+
+**Open Source Python Packages:**
+- [emrvalidator](https://pypi.org/project/emrvalidator/) – Healthcare-focused data quality and validation library
+- [carelytics](https://pypi.org/project/carelytics/) – Healthcare analytics Python package
+
 **Vaishnavi Gadve**  
 Irving, Texas, USA  
 Email: vaishnavigadve143@gmail.com  
